@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>RenewHUB — Dark, Relaxed UI (Option A)</title>
+  <meta name="description" content="RenewHUB — dark theme, parallax, stuck splash, crisp charts and relaxed layout." />
+  <style>
+    :root{
+      --bg:#061126;
+      --card-radius:16px;
+      --accent:#6ee7b7;
+      --accent-2:#7c5cff;
+      --muted: rgba(233,244,251,0.78);
+      --soft: rgba(255,255,255,0.03);
+      --ease: cubic-bezier(.2,.9,.2,1);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, "SF Pro Text", Roboto, Arial;
+      background: linear-gradient(180deg,#04101a 0%, #061126 70%);
+      color:var(--muted);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      overflow-x:hidden;
+      scroll-behavior:smooth;
+    }
+
+    /* ---------------- STUCK SPLASH ---------------- */
+    .splash{
+      position:fixed; inset:0; z-index:9999; display:grid; place-items:center;
+      background: linear-gradient(180deg, rgba(2,6,14,0.98), rgba(4,12,22,0.9));
+      pointer-events:auto;
+    }
+    .splash-inner{display:grid;place-items:center;gap:12px;z-index:5;text-align:center}
+    .logo-mark{width:88px;height:88px;border-radius:18px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;color:#021025;font-weight:900;font-size:36px;box-shadow:0 22px 80px rgba(124,92,255,0.12)}
+    .splash h2{margin:0;font-size:22px;color:var(--muted)}
+    .splash p{margin:0;opacity:.85;font-size:14px}
+    .hint{font-size:13px;opacity:.9;color:rgba(233,244,251,0.82)}
+    .enter-btn{margin-top:8px;padding:10px 16px;border-radius:12px;border:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#021025;font-weight:700;cursor:pointer;box-shadow:0 12px 40px rgba(124,92,255,0.12)}
+
+    /* Visual elements kept behind everything (avoid blurring center content) */
+    .splash-backdrop{
+      position:absolute;inset:0;pointer-events:none;z-index:2;
+      overflow:hidden;
+    }
+    .splash-backdrop svg{position:absolute;left:50%;transform:translateX(-50%);bottom:-8%;width:160%;filter:blur(22px);opacity:0.12}
+
+    /* particles (very subtle) */
+    .particle{position:absolute;width:6px;height:26px;border-radius:4px;background:linear-gradient(180deg,rgba(255,255,255,0.95),rgba(255,255,255,0.2));opacity:.03}
+
+    /* ---------------- TOP BAR & LAYOUT ---------------- */
+    header{position:fixed;top:18px;left:50%;transform:translateX(-50%);width:92%;max-width:1100px;z-index:60}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand .mark{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;color:#021025;font-weight:800}
+    .actions{display:flex;gap:8px;align-items:center}
+    .search{padding:10px 12px;border-radius:12px;background:var(--soft);border:1px solid rgba(255,255,255,0.04);backdrop-filter: none;width:280px;color:var(--muted)}
+    .search::placeholder{color:rgba(233,244,251,0.5)}
+
+    main{padding-top:110px;min-height:100vh}
+
+    /* hero & parallax */
+    .hero{position:relative;height:68vh;min-height:480px;display:flex;align-items:center;justify-content:center;padding:36px 20px;overflow:visible}
+    .parallax-layer{position:absolute;inset:0;pointer-events:none;z-index:1}
+
+    /* relaxed layout: more breathing room */
+    .layout{width:92%;max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 420px;gap:34px;align-items:start;z-index:5;position:relative}
+
+    /* glass cards: reduced blur (so charts don't get blurry) */
+    .glass{
+      background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--card-radius);
+      padding:24px;
+      border:1px solid rgba(255,255,255,0.035);
+      box-shadow: 0 14px 48px rgba(1,6,15,0.6);
+      backdrop-filter: blur(6px) saturate(110%);
+      transform-origin:center;
+      transition: transform .45s var(--ease), box-shadow .35s var(--ease);
+      will-change:transform;
+    }
+    .glass.spring{transition: transform .6s cubic-bezier(.2,1.1,.2,1);}
+    .glass:hover{transform:translateY(-10px);box-shadow:0 30px 80px rgba(1,6,15,0.7)}
+
+    /* card rows inside list */
+    .subs{display:flex;flex-direction:column;gap:12px}
+    .card-row{
+      display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.008), rgba(255,255,255,0.006));
+      border:1px solid rgba(255,255,255,0.025);
+      transition: transform .28s var(--ease), box-shadow .28s var(--ease);
+    }
+    .card-row:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(6,12,20,0.62)}
+
+    /* neon hover */
+    .neon{position:relative;color:var(--accent);cursor:pointer;border-radius:10px;padding:8px 12px;border:1px solid transparent}
+    .neon:hover{color:#fff;box-shadow:0 10px 40px rgba(124,92,255,0.08)}
+
+    /* bottom nav (iOS style) */
+    .bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:90;background:linear-gradient(180deg, rgba(10,14,22,0.6), rgba(6,10,18,0.5));padding:8px;border-radius:999px;border:1px solid rgba(255,255,255,0.03);display:flex;gap:10px;box-shadow:0 12px 36px rgba(2,6,23,0.6)}
+    .nav-btn{padding:10px 14px;border-radius:12px;background:transparent;border:none;color:var(--muted);cursor:pointer}
+    .nav-btn.active{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#021025;font-weight:700;box-shadow:0 8px 30px rgba(124,92,255,0.12)}
+
+    .fab{position:fixed;right:28px;bottom:92px;z-index:92;padding:16px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent-2));border:none;color:#021025;font-weight:800;box-shadow:0 18px 60px rgba(124,92,255,0.12);cursor:pointer}
+
+    /* waves behind panels (less blur, behind everything) */
+    .wave-wrap{position:absolute;left:0;right:0;bottom:0;height:44vh;pointer-events:none;z-index:0}
+    .wave{position:absolute;left:50%;transform:translateX(-50%);width:160%;min-width:1000px;opacity:0.9;filter:blur(10px);mix-blend-mode:overlay}
+
+    /* charts container: no backdrop filter to avoid blurry canvas */
+    .chart-wrap{
+      background: transparent;
+      padding:6px 0;
+      border-radius:10px;
+      /* ensure chart area not blurred by parent */
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    canvas{display:block;width:100% !important;height:160px !important}
+
+    /* relaxed spacing for charts and labels */
+    .small{font-size:13px;color:rgba(233,244,251,0.82)}
+    .muted{color:rgba(233,244,251,0.64);font-size:13px}
+
+    @media (max-width:920px){
+      .layout{grid-template-columns:1fr;gap:18px;padding:0 8px}
+      .search{width:160px}
+      .fab{right:18px;bottom:78px}
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .glass, .ring, .particle{transition:none;animation:none}
+    }
+  </style>
+</head>
+<body>
+  <!-- SPLASH (stuck by default; press Enter or click to dismiss) -->
+  <div class="splash stuck" id="splash">
+    <div class="splash-backdrop" aria-hidden="true">
+      <!-- decorative blurred shapes behind center (kept subtle to avoid blurring main canvases) -->
+      <svg viewBox="0 0 1440 320" preserveAspectRatio="none"><defs></defs>
+        <path fill="#05243a" d="M0,160L48,149.3C96,139,192,117,288,112C384,107,480,117,576,144C672,171,768,213,864,234.7C960,256,1056,256,1152,250.7C1248,245,1344,235,1392,229.3L1440,224L1440,320L0,320Z"></path>
+      </svg>
+    </div>
+
+    <div class="splash-inner" role="dialog" aria-label="Loading">
+      <div class="logo-mark">R</div>
+      <h2>RenewHUB</h2>
+      <p>Smart renewals — gather everything in one place</p>
+      <div class="hint">Tip: Press <strong>Enter</strong> or click button to continue</div>
+      <button class="enter-btn" id="enterBtn">Enter RenewHUB</button>
+    </div>
+  </div>
+
+  <!-- Top bar -->
+  <header>
+    <div class="topbar">
+      <div class="brand">
+        <div class="mark">R</div>
+        <div>
+          <h1 style="margin:0">RenewHUB</h1>
+          <div class="muted">Manage subscriptions • autopay • budget suggestions</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <input class="search" placeholder="Search subscriptions..." aria-label="Search" />
+        <button class="neon" onclick="addSubscription()">＋ Add</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero">
+      <!-- parallax layers (transform only; behind content) -->
+      <div class="parallax-layer" data-speed="0.14"></div>
+      <div class="parallax-layer" data-speed="0.28"></div>
+
+      <!-- relaxed layout -->
+      <div class="layout" id="layout">
+        <div class="glass spring" id="leftPanel">
+          <h2 style="margin:0 0 8px 0">Autopay Manager</h2>
+          <div class="small" style="margin-bottom:12px">Control autopay and upcoming renewals. Charts and UI are positioned to feel relaxed.</div>
+          <div class="subs" id="subscriptionList"></div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div class="glass spring">
+            <h3 style="margin:0 0 8px 0">Payment Methods</h3>
+            <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+              <div style="flex:1" class="small">Visa • **** 4242</div>
+              <div class="muted">Primary</div>
+            </div>
+
+            <div class="chart-wrap" aria-hidden="false">
+              <canvas id="autopayChart"></canvas>
+            </div>
+            <div id="autopaySection" class="muted" style="margin-top:8px">No autopay enabled.</div>
+          </div>
+
+          <div class="glass spring">
+            <h3 style="margin:0 0 8px 0">Budget Suggestions</h3>
+            <div class="chart-wrap">
+              <canvas id="suggestionChart"></canvas>
+            </div>
+            <div id="suggestionBoard" class="muted" style="margin-top:8px">Loading suggestions...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- gentle wave behind panels (low-opacity & blurred) -->
+      <div class="wave-wrap" aria-hidden="true" style="position:absolute;left:0;right:0;bottom:0;height:44vh;pointer-events:none;z-index:0">
+        <svg class="wave" viewBox="0 0 1440 320" preserveAspectRatio="none"><path fill="#05243a" d="M0,160L48,149.3C96,139,192,117,288,112C384,107,480,117,576,144C672,171,768,213,864,234.7C960,256,1056,256,1152,250.7C1248,245,1344,235,1392,229.3L1440,224L1440,320L0,320Z"></path></svg>
+      </div>
+    </div>
+
+    <section style="padding:80px 0 110px 0;border-top:1px solid rgba(255,255,255,0.02)">
+      <div style="width:92%;max-width:1100px;margin:0 auto">
+        <div class="glass spring">
+          <h2 style="margin:0 0 10px 0">Payment Dashboard</h2>
+          <div class="chart-wrap"><canvas id="paymentChart" style="height:180px"></canvas></div>
+          <div id="paymentDashboard" class="muted" style="margin-top:12px">No payments yet.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- bottom nav & fab -->
+  <div class="bottom-nav" role="navigation" aria-label="bottom navigation">
+    <button class="nav-btn active">🏠 Home</button>
+    <button class="nav-btn">💳 Payments</button>
+    <button class="nav-btn">📊 Insights</button>
+    <button class="nav-btn">⚙️ Settings</button>
+  </div>
+
+  <button class="fab" title="Add subscription" onclick="addSubscription()">＋ Add</button>
+
+  <!-- ChartJS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Make charts crisp on high-DPI displays
+    if (window.Chart) {
+      Chart.defaults.devicePixelRatio = window.devicePixelRatio || 1;
+      Chart.defaults.font.size = 13;
+      Chart.defaults.color = 'rgba(233,244,251,0.92)';
+    }
+
+    // ----- App data -----
+    let subs = [];
+    let payments = [];
+    function save(){ localStorage.setItem('subs_relaxed', JSON.stringify(subs)); localStorage.setItem('pay_relaxed', JSON.stringify(payments)); render(); }
+    function load(){ subs = JSON.parse(localStorage.getItem('subs_relaxed') || '[]'); payments = JSON.parse(localStorage.getItem('pay_relaxed') || '[]'); render(); }
+
+    function addSubscription(){
+      const name = prompt('Subscription name?');
+      if(!name) return;
+      const priceStr = prompt('Monthly price (number)?');
+      const price = parseFloat(priceStr);
+      if(Number.isNaN(price)) return alert('Invalid price');
+      const cycle = prompt('Billing cycle (monthly/yearly)?') || 'monthly';
+      subs.push({id:Date.now(), name, price, cycle, autopay:false, active:true});
+      save();
+      springBounce(document.querySelector('.fab'));
+    }
+    function toggleAutopay(id){ const s = subs.find(x=>x.id===id); if(!s) return; s.autopay = !s.autopay; save(); }
+    function recordPayment(id){ const s = subs.find(x=>x.id===id); if(!s) return; payments.push({sub: s.name, amount: s.price, time: new Date().toLocaleString()}); save(); }
+    function cancelSub(id){ const s = subs.find(x=>x.id===id); if(!s) return; s.active = !s.active; save(); }
+
+    // ----- Chart instances -----
+    let autoChart, payChart, suggChart;
+    function renderCharts(){
+      const autoSubs = subs.filter(x=>x.autopay);
+      const autoLabels = autoSubs.map(x=>x.name);
+      const autoData = autoSubs.map(x=>x.price);
+      if(autoChart) autoChart.destroy();
+      autoChart = new Chart(document.getElementById('autopayChart'), {
+        type: 'doughnut',
+        data: { labels: autoLabels, datasets: [{ data: autoData, backgroundColor: ['#6ee7b7','#7c5cff','#00c2ff','#ffd166'] }] },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, layout:{padding:6} }
+      });
+
+      const totals = {};
+      payments.forEach(p => totals[p.sub] = (totals[p.sub] || 0) + p.amount);
+      const payLabels = Object.keys(totals), payData = Object.values(totals);
+      if(payChart) payChart.destroy();
+      payChart = new Chart(document.getElementById('paymentChart'), {
+        type: 'bar',
+        data: { labels: payLabels, datasets:[{ data: payData }] },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}}, y:{grid:{color:'rgba(255,255,255,0.02)'}}}, layout:{padding:6} }
+      });
+
+      const prices = subs.map(s=>s.price);
+      const labels = subs.map(s=>s.name);
+      if(suggChart) suggChart.destroy();
+      suggChart = new Chart(document.getElementById('suggestionChart'), {
+        type:'pie',
+        data:{ labels, datasets:[{ data:prices }]},
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, layout:{padding:6} }
+      });
+    }
+
+    // ----- render list and texts -----
+    function render(){
+      const list = document.getElementById('subscriptionList');
+      list.innerHTML = subs.map(s => `
+        <div class="card-row" role="group" aria-label="${s.name}">
+          <div>
+            <div style="font-weight:700">${s.name}</div>
+            <div class="muted">₹${s.price} • ${s.cycle} • ${s.active ? 'Active' : 'Cancelled'}</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <input type="checkbox" ${s.autopay ? 'checked' : ''} onchange="toggleAutopay(${s.id})"> Autopay
+            </label>
+            <button class="neon" onclick="recordPayment(${s.id})">Pay</button>
+            <button class="neon" onclick="cancelSub(${s.id})">${s.active ? 'Cancel' : 'Reactivate'}</button>
+          </div>
+        </div>
+      `).join('') || '<div class="muted">No subscriptions yet — tap Add to get started.</div>';
+
+      document.getElementById('autopaySection').innerHTML = subs.filter(x=>x.autopay).map(x=>`<div>⚡ ${x.name} — ₹${x.price}</div>`).join('') || 'No autopay enabled.';
+      document.getElementById('paymentDashboard').innerHTML = payments.map(p=>`<div>💳 ${p.sub} — ₹${p.amount}<br><small>${p.time}</small></div><br>`).join('') || 'No payments yet.';
+      document.getElementById('suggestionBoard').innerHTML = subs.filter(x=>x.price>300).map(x=>`<div>⚠️ ${x.name} is pricy (₹${x.price}). Consider alternatives.</div>`).join('') || 'Your subscriptions fit well in your budget.';
+
+      renderCharts();
+    }
+
+    // small apple-like spring bounce
+    function springBounce(el){
+      if(!el) return;
+      el.animate([
+        { transform: 'scale(0.92)' },
+        { transform: 'scale(1.06)' },
+        { transform: 'scale(0.98)' },
+        { transform: 'scale(1)' }
+      ], { duration: 520, easing: 'cubic-bezier(.2,1.1,.2,1)'});
+    }
+
+    // parallax on scroll (transform only)
+    window.addEventListener('scroll', () => {
+      const sc = window.scrollY;
+      document.querySelectorAll('.parallax-layer').forEach(l => {
+        const s = parseFloat(l.getAttribute('data-speed')) || 0.14;
+        l.style.transform = `translateY(${sc * s}px)`;
+      });
+    }, { passive: true });
+
+    // ----- Splash behavior -----
+    const splash = document.getElementById('splash');
+    const enterBtn = document.getElementById('enterBtn');
+
+    function hideSplash(){
+      if(!splash) return;
+      // subtle exit animation
+      splash.style.transition = 'opacity 420ms var(--ease), transform 420ms var(--ease)';
+      splash.style.opacity = '0';
+      splash.style.transform = 'scale(.98) translateY(-6px)';
+      setTimeout(()=>{ splash.remove(); }, 460);
+    }
+
+    enterBtn.addEventListener('click', hideSplash);
+    document.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter') hideSplash();
+      if(e.key === 'n') addSubscription();
+    });
+
+    // spawn a few very subtle particles while splash present
+    function spawnParticles(n=28){
+      const parent = document.querySelector('.splash-backdrop') || document.body;
+      const cx = window.innerWidth/2, cy = window.innerHeight/2;
+      for(let i=0;i<n;i++){
+        const el = document.createElement('div');
+        el.className = 'particle';
+        const angle = Math.random() * Math.PI * 2;
+        const r = Math.random() * Math.max(window.innerWidth, window.innerHeight) * 0.45;
+        const x = cx + Math.cos(angle) * r;
+        const y = cy + Math.sin(angle) * r;
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+        parent.appendChild(el);
+        animateParticle(el, cx, cy);
+        setTimeout(()=>{ try{ el.remove(); }catch(e){} }, 1400 + Math.random()*900);
+      }
+    }
+    function animateParticle(el, cx, cy){
+      const lx = parseFloat(el.style.left), ly = parseFloat(el.style.top);
+      const dx = (cx - lx) * (0.96 + Math.random()*0.14);
+      const dy = (cy - ly) * (0.96 + Math.random()*0.14);
+      const dur = 1100 + Math.random()*800;
+      el.animate([{ transform:'translate(0,0) scale(1)', opacity:0.03 },{ transform: `translate(${dx}px,${dy}px) scale(.06)`, opacity:0.9 }], { duration: dur, easing: 'cubic-bezier(.2,.9,.2,1)'});
+    }
+
+    // spawn periodically while splash exists
+    let particleTimer;
+    window.addEventListener('load', () => {
+      // spawn while splash is present (stuck by default)
+      if(document.getElementById('splash')) {
+        spawnParticles(20);
+        particleTimer = setInterval(()=> spawnParticles(12), 1400);
+      }
+      // initial load of data slightly after (relaxed)
+      setTimeout(()=> load(), 220);
+    });
+
+    // cleanup timer if splash removed
+    const observer = new MutationObserver(() => {
+      if(!document.getElementById('splash') && particleTimer) { clearInterval(particleTimer); particleTimer = null; }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+  </script>
+</body>
+</html>
